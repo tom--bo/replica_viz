@@ -161,29 +161,23 @@ func render() {
 		r := replica[i]
 		sn, _ := graph.CreateNode(s.Hostname)
 		rn, _ := graph.CreateNode(r.Hostname)
+		if s.Hostname == hostname {
+			sn.SetColor("red")
+		}
+		if r.Hostname == hostname {
+			rn.SetColor("red")
+		}
 		e, _ := graph.CreateEdge(dummy, sn, rn)
 		e.SetLabel("")
 		dummy += "a"
 	}
-	// n, err := graph.CreateNode("LFMNGDB1510")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// m, err := graph.CreateNode("LFMNGDB1512")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// e, err := graph.CreateEdge("e", n, m)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// e.SetLabel("")
+
 	var buf bytes.Buffer
 	if err := g.Render(graph, "dot", &buf); err != nil {
 		fmt.Println(err.Error())
 	}
 
-	if err := g.RenderFilename(graph, graphviz.PNG, "/tmp/graph.png"); err != nil {
+	if err := g.RenderFilename(graph, graphviz.PNG, "/tmp/"+hostname+".png"); err != nil {
 		fmt.Println(err.Error())
 	}
 }
@@ -199,7 +193,6 @@ func parseOptions() {
 }
 
 func main() {
-	fmt.Println("start ---")
 	parseOptions()
 
 	searchList = append(searchList, &Host{FoundName: hostname, Port: port})
@@ -214,11 +207,8 @@ func main() {
 			fmt.Println(err.Error())
 		}
 		idx++
+		// Sleep to avoid massive request for MySQLs for fail-safe
 		time.Sleep(100 * time.Millisecond)
-	}
-
-	for i, s := range source {
-		fmt.Println(s.Hostname, " -> ", replica[i].Hostname)
 	}
 
 	render()
